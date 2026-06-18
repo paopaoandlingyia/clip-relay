@@ -73,17 +73,3 @@ dist/
 nul
 NUL
 
-# mobile shell
-/mobile/node_modules/
-/mobile/dist/
-
-
-
-/mobile/.gradle-user/
-/mobile/gradle-user/
-/mobile/android-sdk/
-/mobile/tmp/
-/mobile/user-home/
-/mobile/android/local.properties
-# tools and runtimes
-/tools/*/

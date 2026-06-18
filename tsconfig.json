@@ -38,7 +38,6 @@
   ],
   "exclude": [
     "node_modules",
-    "examples/**",
-    "mobile/**"
+    "examples/**"
   ]
 }

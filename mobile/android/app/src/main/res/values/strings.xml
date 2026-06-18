@@ -1,7 +1,0 @@
-<?xml version='1.0' encoding='utf-8'?>
-<resources>
-    <string name="app_name">Clip Relay</string>
-    <string name="title_activity_main">Clip Relay 移动端</string>
-    <string name="package_name">xyz.cliprelay.mobile</string>
-    <string name="custom_url_scheme">xyz.cliprelay.mobile</string>
-</resources>
