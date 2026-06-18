@@ -208,7 +208,6 @@ async fn main() -> anyhow::Result<()> {
             get(get_item_share).put(update_item_share),
         )
         .route("/clipboard/reorder", post(reorder_clipboard))
-        .route("/admin/sync-from-cloud", post(sync_from_cloud))
         .route("/auth/access-token", post(issue_access_token))
         .route("/share-target", post(web_share_target))
         // Files
@@ -1176,10 +1175,7 @@ fn init_db(db_path: &StdPath) -> anyhow::Result<Connection> {
     conn.execute_batch(
         r"
         PRAGMA journal_mode = WAL;
-        -- Litestream expects to control checkpointing; disable SQLite's auto-checkpointing
-        -- to avoid WAL truncation/checkpoint races under load.
-        PRAGMA wal_autocheckpoint = 0;
-        -- Avoid transient database is locked errors when Litestream performs checkpoints.
+        -- Tolerate brief lock contention during concurrent writes/checkpoints.
         PRAGMA busy_timeout = 5000;
         PRAGMA foreign_keys = ON;
         CREATE TABLE IF NOT EXISTS ClipboardItem (
@@ -1879,53 +1875,6 @@ async fn get_file(
     }
 }
 
-async fn sync_from_cloud(
-    State(state): State<AppState>,
-) -> impl IntoResponse {
-    // Restoring a SQLite database while Litestream is actively replicating it is unsafe:
-    // Litestream tails the WAL file and will error if the DB/WAL is swapped underneath it.
-    //
-    // Instead, we request a restart-based restore:
-    // 1) Write a marker file under DATA_DIR (persistent volume).
-    // 2) Exit the process so the supervisor restarts the container.
-    // 3) The container startup script sees the marker, restores from the replica, and then starts replication.
-
-    if env::var("S3_ENDPOINT").is_err() || env::var("S3_BUCKET").is_err() {
-        return (
-            StatusCode::BAD_REQUEST,
-            Json(serde_json::json!({
-                "error": "S3 is not configured (missing S3_ENDPOINT/S3_BUCKET)"
-            })),
-        )
-            .into_response();
-    }
-
-    let now = OffsetDateTime::now_utc().unix_timestamp();
-    let marker_path = state.data_dir.join(".restore_from_cloud");
-    if let Err(e) = tokio::fs::write(&marker_path, format!("requested_at={now}\n")).await {
-        return (
-            StatusCode::INTERNAL_SERVER_ERROR,
-            Json(serde_json::json!({"error":"failed to write restore marker","detail": e.to_string()})),
-        )
-            .into_response();
-    }
-
-    // Give the HTTP response a moment to flush before we exit.
-    tokio::spawn(async {
-        tokio_time::sleep(Duration::from_millis(500)).await;
-        std::process::exit(0);
-    });
-
-    (
-        StatusCode::ACCEPTED,
-        Json(serde_json::json!({
-            "success": true,
-            "restart": true,
-            "marker": marker_path.display().to_string(),
-        })),
-    )
-        .into_response()
-}
 
 // -------------------- Share Handlers --------------------
 

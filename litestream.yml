@@ -1,9 +1,0 @@
-# Litestream v0.5 configuration for real-time S3/R2 backup
-dbs:
-  - path: /app/data/custom.db
-    replica:
-      type: s3
-      bucket: "${S3_BUCKET}"
-      path: "database/main"
-      endpoint: "${S3_ENDPOINT}"
-      region: "${S3_REGION}"

@@ -62,14 +62,11 @@ CLIPBOARD_PASSWORD="change-me"
   - For non-Docker local development, the server auto-detects the data directory (usually `./data` relative to the project root).
   - If the auto-detected directory is not writable, the server fails fast on startup; set `DATA_DIR` to point at a writable path.
 
-### Optional: Enable S3 (Litestream + uploads)
-When `S3_*` env vars are provided:
-- SQLite is replicated to S3 by Litestream (prefix: `database/main/`, see `litestream.yml`).
-- Large uploads are stored directly in S3 by the app (prefix: `uploads/`).
+### Optional: Enable S3 (large uploads)
+When `S3_*` env vars are provided (`S3_ENDPOINT`, `S3_BUCKET`, `S3_REGION`):
+- Large uploads are stored directly in S3 by the app (prefix: `uploads/`); smaller files are kept inline in SQLite.
 
-On a fresh deployment:
-- If the local DB file is missing, the container attempts to restore it from the Litestream replica at startup.
-- You can also trigger a restore at runtime from the UI (Settings → "Sync DB from cloud"); this overwrites the local DB and restarts the service to avoid Litestream WAL sync conflicts.
+> Note: there is currently no database backup mechanism. The SQLite database lives only under `DATA_DIR` — back up that directory yourself. (A built-in DB backup/restore strategy is planned.)
 
 ## Docker
 The provided `Dockerfile` builds a slim Rust runtime image including the static Next export. First-time empty volumes are auto-initialized by the server.

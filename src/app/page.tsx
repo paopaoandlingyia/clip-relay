@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { FileText, Search, Github, Bug, Menu, LogOut, CloudDownload } from 'lucide-react';
+import { FileText, Search, Github, Bug, Menu, LogOut } from 'lucide-react';
 import { 
   AlertDialog,
   AlertDialogAction,
@@ -724,30 +724,6 @@ function SettingsDrawer({
             <a href={issuesUrl} target="_blank" rel="noopener noreferrer">
               <Bug className="h-4 w-4 mr-2" /> {"\u63d0\u4ea4\u95ee\u9898"}
             </a>
-          </Button>
-          <Button
-            variant="ghost"
-            className="w-full justify-start"
-            onClick={async () => {
-              if (!confirm("\u786e\u5b9a\u8981\u4ece\u4e91\u7aef\u540c\u6b65\u6570\u636e\u5e93\u5417\uff1f\u8fd9\u4f1a\u8986\u76d6\u672c\u5730\u73b0\u6709\u6570\u636e\u5e76\u91cd\u542f\u8fde\u63a5\u3002")) return;
-              try {
-                const res = await authFetch('/api/admin/sync-from-cloud', { method: 'POST' });
-                const data = await res.json();
-                if (res.ok) {
-                  toast({
-                    title: "\u5df2\u89e6\u53d1\u4e91\u7aef\u6062\u590d",
-                    description: "\u670d\u52a1\u5c06\u91cd\u542f\u5e76\u4ece\u4e91\u7aef\u6062\u590d\u6570\u636e\u5e93\uff0c\u8bf7\u7a0d\u540e\u5237\u65b0\u9875\u9762\u2026",
-                  });
-                  setTimeout(() => window.location.reload(), 3500);
-                } else {
-                  throw new Error(data.error || "\u540c\u6b65\u5931\u8d25");
-                }
-              } catch (e: any) {
-                toast({ title: "\u540c\u6b65\u5931\u8d25", description: e.message, variant: "destructive" });
-              }
-            }}
-          >
-            <CloudDownload className="h-4 w-4 mr-2" /> {"\u4ece\u4e91\u7aef\u540c\u6b65\u6570\u636e\u5e93"}
           </Button>
           <div className="flex items-center justify-between py-2">
             <div className="text-sm">{"\u89c6\u56fe\u6a21\u5f0f"}</div>
